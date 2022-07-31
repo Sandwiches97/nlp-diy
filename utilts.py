@@ -1,0 +1,3 @@
+from diy_torch.C3_linear_networks.C3_1_LR import Timer
+from diy_torch.C3_linear_networks.C3_6_softmax_scratch import Accumulator, Animator
+from diy_torch.C5_deep_learning_computation.C5_6_GPU import try_gpu
