@@ -117,6 +117,16 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):
     assert test_acc <= 1 and test_acc > 0.7, test_acc
 
 
+def cross_entropy(y_hat, y):
+    """选则 one-hot 编码 y 相应的标签的位置 idx_list，返回其 -torch.log(list, idx_list]
+
+    :param y_hat: (batch size, num_class)
+    :param y: (batch size, num_class)
+    :return: (batch size)
+    """
+    return -torch.log(y_hat[range(len(y_hat)), y])
+
+
 def main():
 
 
@@ -131,14 +141,6 @@ def main():
     def net(X):
         return softmax(torch.matmul(X.reshape(-1, W.shape[0]), W) + b)
 
-    def cross_entropy(y_hat, y):
-        """选则 one-hot 编码 y 相应的标签的位置 idx_list，返回其 -torch.log(list, idx_list]
-
-        :param y_hat: (batch size, num_class)
-        :param y: (batch size, num_class)
-        :return: (batch size)
-        """
-        return -torch.log(y_hat[range(len(y_hat)), y])
 
     def show_soft():
         X = torch.normal(0, 1, (2, 5))
