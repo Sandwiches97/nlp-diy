@@ -44,9 +44,9 @@ class AdditiveAttention(nn.Module):
         features = queries.unsqueeze(2) + keys.unsqueeze(1)
         features = torch.tanh(features)
         # There is only one output of `self.w_v`, so we remove the last
-        # one-dimensional entry from the shape. Shape of `scores`:
-        # (`batch_size`, no. of queries, no. of key-value pairs)
-        scores = self.W_v(features).squeeze(-1)
+        # one-dimensional entry from the shape.
+        scores = self.W_v(features).squeeze(-1) # 去掉 shape=1 的 axis,
+                                                                    # score.shape = (`batch_size`, no. of queries, no. of key-value pairs)
         self.attention_weights = masked_softmax(scores, valid_lens)
         # Shape of `values`:
         # (`batch_size`, no. of key-value pairs, value dimension)
@@ -62,8 +62,9 @@ class DotProductAttention(nn.Module):
         """  注意这里维护了一个属性self.attention_weights: 它是一个矩阵，其中的元素表示 queries中的每个query与每个键值对的匹配分数
         (`batch_size`, no. of queries || pairs, `d`||`v`) ===>>>>   (`batch_size`, no. of queries,  no. of key-value pairs)
         其中，这里面的`d`是 （k,q的词向量维度/num_heads）， `v`是（value的长度/num_heads），在自注意力机制中，'d'='v'
-        :param queries:  Shape of `queries`: (`batch_size`, no. of queries, `d`)
-        :param keys:  Shape of `keys`: (`batch_size`, no. of key-value pairs, `d`)
+
+        :param queries: Shape of `queries`: (`batch_size`, no. of queries, `d`)
+        :param keys:    Shape of `keys`: (`batch_size`, no. of key-value pairs, `d`)
         :param values:  Shape of `values`: (`batch_size`, no. of key-value pairs, `v`: value's length)
         :param valid_lens:  Shape of `valid_lens`: (`batch_size`,) or (`batch_size`, no. of queries 查询的个数)
         :return: attention_weights * values, shape = (`batch_size`, no. of key-value pairs, `v`)

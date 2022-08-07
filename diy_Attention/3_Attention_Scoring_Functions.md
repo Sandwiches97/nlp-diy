@@ -7,7 +7,6 @@
 将注意力汇聚的输出计算可以作为值的加权平均，选择不同的注意力评分函数会带来不同的注意力汇聚操作。
 
 1. 当查询和键是不同长度的矢量时，可以使用**additive attention scoring function**。
-
 2. 当它们的长度相同时，使用缩放的**scaled dot-product attention scoring function**的**计算效率更高**。
 
 * additive attention scoring function：将query和key合并起来进入一个单输出单隐藏层的感知机
@@ -69,6 +68,32 @@ $$
 
 where learnable parameters $W_q\in \mathbb{R}^{h×q}$, $W_k\in \mathbb{R}^{h×k}$, and $w_v\in \mathbb{R}^h$. Equivalent to [(3.3)](), the `query` and the `key` are concatenated and fed into an `MLP` with a single `hidden layer` whose number of hidden units is $h$, a hyperparameter. By using `tanh` as the activation function and disabling bias terms, we implement additive attention in the following.
 
+```python
+class AdditiveAttention(nn.Module):
+    """Additive attention"""
+    def __init__(self, key_size, query_size, num_hiddens, dropout, **kwargs):
+        super(AdditiveAttention, self).__init__(**kwargs)
+        self.W_k = nn.Linear(key_size, num_hiddens, bias=False)
+        self.W_q = nn.Linear(query_size, num_hiddens, bias=False)
+        self.W_v = nn.Linear(num_hiddens, 1, bias=False)
+        self.dropout = nn.Dropout(dropout)
+    def forward(self, queries, keys, values, valid_lens):
+        queries, keys = self.W_q(queries), self.W_k(keys)
+        # After dimension expansion, shape of "queries": ("batch_size",   queries 的 数量, "num_hiddens")
+        # and shape of "keys": ("batch_size", key-value pairs 的数量 , "num_hiddens").
+        # Sum them up with broadcasting
+        features = queries.unsqueeze(2) + keys.unsqueeze(1)
+        features = torch.tanh(features)
+        # There is only one output of `self.w_v`, so we remove the last
+        # one-dimensional entry from the shape. Shape of `scores`:
+        # (`batch_size`, no. of queries, no. of key-value pairs)
+        scores = self.W_v(features).squeeze(-1)
+        self.attention_weights = masked_softmax(scores, valid_lens)
+        # Shape of `values`:
+        # (`batch_size`, no. of key-value pairs, value dimension)
+        return torch.bmm(self.dropout(self.attention_weights), values)
+```
+
 ## 3.3. Scaled Dot-Product Attention
 
 A **more computationally efficient design** for the `scoring function` can be simply dot product. **However**, the dot product operation requires that both the `query` and the `key` have the same vector length, say $d$. Assume that all the elements of the query and the key are independent random variables with zero mean and unit variance. The dot product of both vectors has zero mean and a variance of $d$. (a，b服从0均值，1的方差，那么$a\cdot b$也服从该分布）  To ensure that the variance of the dot product still remains one regardless of vector length, the **scaled dot-product attention** scoring function。 (a，b服从0均值，1的方差，那么$a\cdot b$也服(0, d)的分布，如果想使得也服从(0,1)则需要把该函数除以 $\sqrt{d}$）
@@ -107,7 +132,6 @@ class DotProductAttention(nn.Module):
         return torch.bmm(self.dropout(self.attention_weights), values)
 ```
 
-
 To demonstrate the above `DotProductAttention` class, we use the same `keys`, `values`, and valid lengths from the earlier toy example for additive attention. For the dot product operation, we make the feature size of queries the same as that of keys.
 
 ```python
@@ -116,6 +140,5 @@ attention = DotProductAttention(dropout=0.5)
 attention.eval()
 attention(queries, keys, values, valid_lens)
 ```
-
 
 Same as in the **additive attention** demonstration, since `keys` contains the same element that cannot be differentiated by any query, uniform attention weights are obtained.
