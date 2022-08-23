@@ -24,7 +24,7 @@ c_t^′=\sum_{t=1}^T\alpha(s_{t^′−1},h_t)h_t,
 
 $$
 
-where the **decoder** hidden state $s_{t^′−1}$ at time step $t^′−1$ is the `query`, and the **encoder** hidden states ht are both the `keys` and `values`, and the attention weight $\alpha$ is computed as in [(3.2)](./3_Attention_Scoring_Functions.md) using the **additive attention scoring function** defined by [(3.3)]().
+where the **decoder** hidden state $s_{t^′−1}$ at time step $t^′−1$ is the `query`, and the **encoder** hidden states $h_t$ are both the `keys` and `values`, and the attention weight $\alpha$ is computed as in [(3.2)](./3_Attention_Scoring_Functions.md) using the **additive attention scoring function** defined by [(3.3)]().
 
 Slightly different from the vanilla RNN encoder-decoder architecture in [Fig. 9.7.2](), the same architecture with **Bahdanau attention** is depicted in [Fig. 4.1]().
 
