@@ -23,9 +23,11 @@ This chapter will introduce the fundamental concepts, classic models and recent 
   	</div>
 </center>
 
-## 1.1 Collaborative Filtering
+## 1.1 Collaborative Filtering 协同过滤
 
 We start the journey with the $\text{\color{red}\colorbox{white}{important concept}}$ in recommender systems—$\text{\color{red}\colorbox{black}{collaborative filtering (CF)}}$, which was first coined by the Tapestry system [[Goldberg et al., 1992](https://d2l.ai/chapter_references/zreferences.html#id86 "Goldberg, D., Nichols, D., Oki, B. M., & Terry, D. (1992). Using collaborative filtering to weave an information tapestry. Communications of the ACM, 35(12), 61–71.")], $\text{\color{yellow}\colorbox{black}{referring to}}$ “people collaborate to help one another $\textbf{\color{black}\colorbox{white}{perform the filtering process}}$ $\text{\color{yellow}\colorbox{black}{in order to}}$ handle the large amounts of email and messages posted to newsgroups”. This term has been enriched with more senses. $\text{\color{yellow}\colorbox{black}{In a broad sense}}$, it is the process of $\textbf{\color{black}\colorbox{white}{filtering for information or patterns}}$ using techniques involving collaboration among multiple users, agents, and data sources. CF has many forms and numerous CF methods proposed since its advent.
+
+该技术通过分析用户或者事物之间的相似性（“协同”），来预测用户可能感兴趣的内容并将此内容推荐给用户。
 
 Overall, CF techniques can be categorized into:
 
@@ -42,7 +44,6 @@ $\text{\color{red}\colorbox{black}{Memory-based CF}}$ has limitations in dealing
 To learn the preference of users, the system shall $\text{\color{red}\colorbox{white}{collect feedback}}$ from them. The feedback can be either explicit or implicit [[Hu et al., 2008](https://d2l.ai/chapter_references/zreferences.html#id118 "Hu, Y., Koren, Y., & Volinsky, C. (2008). Collaborative filtering for implicit feedback datasets. 2008 Eighth IEEE International Conference on Data Mining (pp. 263–272).")].
 
 - For example, [IMDb](https://www.imdb.com/) collects $\text{\color{red}\colorbox{white}{star ratings}}$ ranging from one to ten stars for movies. YouTube provides the $\text{\color{red}\colorbox{white}{thumbs-up and thumbs-down buttons}}$ for users to show their preferences. It is apparent that gathering $\text{\color{red}\colorbox{black}{explicit feedback}}$ requires users to indicate their interests proactively. $\text{\color{yellow}\colorbox{black}{Nonetheless}}$, explicit feedback is not always readily available as many users may be reluctant to rate products.
-
 - Relatively speaking, $\text{\color{red}\colorbox{black}{implicit feedback}}$ is often readily available since it is mainly concerned with modeling implicit behavior such as user clicks. $\text{\color{yellow}\colorbox{black}{As such}}$, many recommender systems are centered on implicit feedback which indirectly reflects user’s opinion through $\text{\color{red}\colorbox{white}{observing user behavior}}$. There are diverse forms of implicit feedback including $\text{\color{red}\colorbox{white}{purchase history}}$, $\text{\color{red}\colorbox{white}{browsing history}}$, $\text{\color{red}\colorbox{white}{watches}}$ and even $\text{\color{red}\colorbox{white}{mouse movements}}$. $\text{\color{yellow}\colorbox{black}{For example}}$, a user that purchased many books by the same author probably likes that author. Note that implicit feedback is inherently noisy. We can only *guess* their preferences and true motives. A user watched a movie does not necessarily indicate a positive view of that movie.
 
 ## 1.3 Recommendation Tasks

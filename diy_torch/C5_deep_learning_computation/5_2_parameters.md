@@ -1,9 +1,7 @@
 # 2 Parameter Management
 
-
 * 我们有几种方法可以访问、初始化和绑定模型参数。
 * 我们可以使用自定义初始化方法。
-
 
 在选择了架构并设置了超参数后，我们就进入了训练阶段 (train loop)。 此时，我们的$\text{\colorbox{black}{\color{yellow}目标}}$ 是找到使损失函数最小化的模型参数值。 经过训练后，我们将需要使用这些参数来做出未来的预测。 此外，有时我们希望提取参数，以便在其他环境中复用它们， 将模型保存下来，以便它可以在其他软件中执行， 或者为了获得科学的理解而进行检查。
 
@@ -25,7 +23,8 @@ net(X)
 ```
 
 tensor([[0.1552],
-        [0.1666]], grad_fn=<AddmmBackward0>)
+[0.1666]], grad_fn=<AddmmBackward0>)
+
 ## 2.1 [**Parameter Access**] 参数访问
 
 我们从已有模型中访问参数。 当通过 `Sequential` 类定义模型时， 我们可以 $\color{red}通过索引访问$ 模型的任意层。 这就像模型是一个列表一样，每层的参数都在其属性中。 如下所示，我们可以检查第二个全连接层的参数。
@@ -33,6 +32,7 @@ tensor([[0.1552],
 ```python
 print(net[2].state_dict())
 ```
+
 OrderedDict([('weight', tensor([[-0.0536,  0.3236,  0.3383,  0.1169, -0.1027,  0.3006, -0.2254, -0.1367]])), ('bias', tensor([0.1964]))])
 输出的结果告诉我们一些重要的事情：
 
@@ -52,6 +52,7 @@ print(type(net[2].bias))
 print(net[2].bias)
 print(net[2].bias.data)
 ```
+
 <class 'torch.nn.parameter.Parameter'>
 Parameter containing:
 tensor([0.1964], requires_grad=True)
@@ -61,7 +62,9 @@ tensor([0.1964])
 ```python
 net[2].weight.grad == None
 ```
+
 True
+
 ### 2.1.2 [**All Parameters at Once**] 一次性访问所有参数
 
 当我们需要对所有参数执行操作时，逐个访问它们可能会很麻烦。 当我们处理更复杂的块（例如，嵌套块）时，情况可能会变得特别复杂， 因为我们需要 $\color{red}\text{递归整个树}$ 来提取每个子块的参数。 下面，我们将通过演示来比较访问第一个全连接层的参数和访问所有层。
@@ -70,6 +73,7 @@ True
 print(*[(name, param.shape) for name, param in net[0].named_parameters()])
 print(*[(name, param.shape) for name, param in net.named_parameters()])
 ```
+
 ('weight', torch.Size([8, 4])) ('bias', torch.Size([8]))
 ('0.weight', torch.Size([8, 4])) ('0.bias', torch.Size([8])) ('2.weight', torch.Size([1, 8])) ('2.bias', torch.Size([1]))
 这为我们提供了另一种访问网络参数的方式，如下所示。
@@ -77,7 +81,9 @@ print(*[(name, param.shape) for name, param in net.named_parameters()])
 ```python
 net.state_dict()['2.bias'].data
 ```
+
 tensor([0.1964])
+
 ### 2.1.3 Collecting Parameters from Nested Blocks 嵌套块
 
 让我们看看，如果我们将多个块相互嵌套，参数命名约定是如何工作的。 我们首先定义一个生成块的函数（可以说是“块工厂”），然后将这些块组合到更大的块中
@@ -97,48 +103,52 @@ def block2():
 rgnet = nn.Sequential(block2(), nn.Linear(4, 1))
 rgnet(X)
 ```
+
 tensor([[0.0870],
-        [0.0870]], grad_fn=<AddmmBackward0>)
+[0.0870]], grad_fn=<AddmmBackward0>)
 设计了网络后，我们看看它是如何工作的。
 
 ```python
 print(rgnet)
 ```
+
 Sequential(
-  (0): Sequential(
-    (block 0): Sequential(
-      (0): Linear(in_features=4, out_features=8, bias=True)
-      (1): ReLU()
-      (2): Linear(in_features=8, out_features=4, bias=True)
-      (3): ReLU()
-    )
-    (block 1): Sequential(
-      (0): Linear(in_features=4, out_features=8, bias=True)
-      (1): ReLU()
-      (2): Linear(in_features=8, out_features=4, bias=True)
-      (3): ReLU()
-    )
-    (block 2): Sequential(
-      (0): Linear(in_features=4, out_features=8, bias=True)
-      (1): ReLU()
-      (2): Linear(in_features=8, out_features=4, bias=True)
-      (3): ReLU()
-    )
-    (block 3): Sequential(
-      (0): Linear(in_features=4, out_features=8, bias=True)
-      (1): ReLU()
-      (2): Linear(in_features=8, out_features=4, bias=True)
-      (3): ReLU()
-    )
-  )
-  (1): Linear(in_features=4, out_features=1, bias=True)
+(0): Sequential(
+(block 0): Sequential(
+(0): Linear(in_features=4, out_features=8, bias=True)
+(1): ReLU()
+(2): Linear(in_features=8, out_features=4, bias=True)
+(3): ReLU()
+)
+(block 1): Sequential(
+(0): Linear(in_features=4, out_features=8, bias=True)
+(1): ReLU()
+(2): Linear(in_features=8, out_features=4, bias=True)
+(3): ReLU()
+)
+(block 2): Sequential(
+(0): Linear(in_features=4, out_features=8, bias=True)
+(1): ReLU()
+(2): Linear(in_features=8, out_features=4, bias=True)
+(3): ReLU()
+)
+(block 3): Sequential(
+(0): Linear(in_features=4, out_features=8, bias=True)
+(1): ReLU()
+(2): Linear(in_features=8, out_features=4, bias=True)
+(3): ReLU()
+)
+)
+(1): Linear(in_features=4, out_features=1, bias=True)
 )
 因为层是分层嵌套的，所以我们也可以像通过嵌套列表索引一样访问它们。 下面，我们访问第一个主要的块中、第二个子块的第一层的偏置项。
 
 ```python
 rgnet[0][1][0].bias.data
 ```
+
 tensor([ 0.2247,  0.3228, -0.2617, -0.0094, -0.2431, -0.3883,  0.1471,  0.4484])
+
 ## 2.2 Parameter Initialization
 
 知道了如何访问参数后，现在我们看看如何正确地初始化参数。 我们在 [4.8节](https://zh.d2l.ai/chapter_multilayer-perceptrons/numerical-stability-and-init.html#sec-numerical-stability)中讨论了良好初始化的必要性。 深度学习框架提供默认随机初始化， 也允许我们创建自定义初始化方法， 满足我们通过其他规则实现初始化权重。
@@ -160,6 +170,7 @@ def init_normal(m):
 net.apply(init_normal)
 net[0].weight.data[0], net[0].bias.data[0]
 ```
+
 (tensor([-0.0002, -0.0145, -0.0036, -0.0147]), tensor(0.))
 我们还可以将所有参数初始化为 $给定的常数$，比如初始化为1。
 
@@ -172,6 +183,7 @@ def init_constant(m):
 net.apply(init_constant)
 net[0].weight.data[0], net[0].bias.data[0]
 ```
+
 (tensor([1., 1., 1., 1.]), tensor(0.))
 我们还可以对某些块应用不同的初始化方法。
 
@@ -190,8 +202,10 @@ net[2].apply(init_42)
 print(net[0].weight.data[0])
 print(net[2].weight.data)
 ```
+
 tensor([-0.4059, -0.2534,  0.4267,  0.5348])
 tensor([[42., 42., 42., 42., 42., 42., 42., 42.]])
+
 ### 2.2.2 [**Custom Initialization**] 自定义初始化
 
 有时，深度学习框架没有提供我们需要的初始化方法。 在下面的例子中，我们使用以下的分布为任意权重参数 $w$ 定义初始化方法：
@@ -220,6 +234,7 @@ def my_init(m):
 net.apply(my_init)
 net[0].weight[:2]
 ```
+
 ```
 Init weight torch.Size([8, 4])
 Init weight torch.Size([1, 8])
@@ -227,6 +242,7 @@ Init weight torch.Size([1, 8])
 tensor([[ 0.0000, -9.8794, -5.9144, -7.1713],
 [ 0.0000, -6.5578, -0.0000, -0.0000]], grad_fn=<SliceBackward0>)
 ```
+
 注意，我们始终可以直接设置参数。
 
 ```python
@@ -234,7 +250,9 @@ net[0].weight.data[:] += 1
 net[0].weight.data[0, 0] = 42
 net[0].weight.data[0]
 ```
+
 tensor([42.0000, -8.8794, -4.9144, -6.1713])
+
 ## 2.3 [**Tied Parameters**] 参数绑定
 
 有时我们希望在多个层间 $\color{red}共享参数$： 我们可以定义一个Dense Layer，然后使用它的参数来设置另一个层的参数。
@@ -253,6 +271,7 @@ net[2].weight.data[0, 0] = 100
 # 确保它们实际上是同一个对象，而不只是有相同的值
 print(net[2].weight.data[0] == net[4].weight.data[0])
 ```
+
 tensor([True, True, True, True, True, True, True, True])
 tensor([True, True, True, True, True, True, True, True])
 这个例子表明第三个和第五个神经网络层的参数是绑定的。 它们不仅值相等，而且由相同的张量表示。 因此，如果我们改变其中一个参数，另一个参数也会改变。

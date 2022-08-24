@@ -6,6 +6,11 @@ from d2l_en.pytorch.d2l import torch as d2l
 from typing import Tuple
 from pandas import DataFrame
 
+d2l.DATA_HUB['ml-100k'] = (
+    'https://files.grouplens.org/datasets/movielens/ml-100k.zip',
+    'cd4dcac4241c8a4ad7badc7ca635da8a69dddb83')
+
+
 def read_data_ml100k() -> Tuple[DataFrame, int, int]:
     data_dir = d2l.download_extract('ml-100k')
     names = ['user_id', 'item_id', 'rating', 'timestamp']
@@ -37,12 +42,12 @@ def split_data_ml100k(data, num_users, num_items, split_mode="random", test_rati
             train_items.setdefault(u, []).append((u, i, rating, time))
             if u not in test_items or test_items[u][-1] < time:
                 test_items[u] = (i, rating, time)
-            for u in range(1, num_users+1):
-                train_list.extend(sorted(train_items[u], key=lambda x: x[3]))
-            test_data = [(key, *value) for key, value in test_items.items()]
-            train_data = [item for item in train_list if item not in test_data]
-            train_data = pd.DataFrame(train_data)
-            test_data = pd.DataFrame(test_data)
+        for u in range(1, num_users+1):
+            train_list.extend(sorted(train_items[u], key=lambda x: x[3]))
+        test_data = [(key, *value) for key, value in test_items.items()]
+        train_data = [item for item in train_list if item not in test_data]
+        train_data = pd.DataFrame(train_data)
+        test_data = pd.DataFrame(test_data)
     else: # the 90% of the data as training samples and the rest 10% as test samples by default
         mask = [True if x==1 else False for x in np.random.uniform(0, 1, (len(data))) < 1-test_ratio]
         neg_mask = [not x for x in mask]
@@ -91,8 +96,17 @@ def split_and_load_ml100k(split_mode="seq-aware", feedback="explicit",
     train_data, test_data = split_data_ml100k(data, num_users, num_items, split_mode, test_ratio)
     train_u, train_i, train_r, _ = load_data_ml100k(train_data, num_users, num_items, feedback)
     test_u, test_i, test_r, _ = load_data_ml100k(test_data, num_users, num_items, feedback)
-    train_u, train_i, train_r = np.array(train_u), np.array(train_i), np.array(train_r)
-    test_u, test_i, test_r = np.array(test_u), np.array(test_i), np.array(test_r)
+
+    tmp_u, tmp_i = np.zeros((len(train_u), num_users), dtype=int), np.zeros((len(train_u), num_items), dtype=int)
+    tmp_u[np.arange(len(train_u)), train_u] = 1
+    tmp_i[np.arange(len(train_u)), train_i] = 1
+    train_u, train_i, train_r = np.array(tmp_u), np.array(tmp_i), np.array(train_r)
+
+    tmp_u, tmp_i = np.zeros((len(test_u), num_users), dtype=int), np.zeros((len(test_u), num_items), dtype=int)
+    tmp_u[np.arange(len(test_u)), test_u] = 1
+    tmp_i[np.arange(len(test_u)), test_i] = 1
+    test_u, test_i, test_r = np.array(tmp_u), np.array(tmp_i), np.array(test_r)
+
     train_ds = Data(train_u, train_i, train_r)
     test_ds = Data(test_u, test_i, test_r)
     train_iter = DataLoader(train_ds, shuffle=True, drop_last=False, batch_size=batch_size)
@@ -109,7 +123,5 @@ def main():
 
 
 if __name__=="__main__":
-    d2l.DATA_HUB['ml-100k'] = (
-        'https://files.grouplens.org/datasets/movielens/ml-100k.zip',
-        'cd4dcac4241c8a4ad7badc7ca635da8a69dddb83')
+
     main()

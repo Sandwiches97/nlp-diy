@@ -1,11 +1,11 @@
 # 3 Matrix Factorization 矩阵因子分解
 
-- 矩阵分解模型广泛用于推荐系统。**它可用于预测用户可能对项目的评分。**
+- 矩阵分解模型广泛用于推荐系统。**它可用于 $\color{red}预测用户可能对项目的评分$。**
 - 我们可以为推荐系统实现和训练矩阵分解。
 
 $\text{\color{red}\colorbox{black}{Matrix Factorization}}$ [[Koren et al., 2009](https://d2l.ai/chapter_references/zreferences.html#id148 "Koren, Y., Bell, R., & Volinsky, C. (2009). Matrix factorization techniques for recommender systems. Computer, pp. 30–37.")] is a well-established algorithm in the recommender systems literature. 矩阵分解模型的第一个版本是由 Simon Funk 在一篇著名的 [blog post](https://sifter.org/~simon/journal/20061211.html) 中提出的，他在其中描述了对交互矩阵进行因式分解的思想。随后，由于 2006 年举行的 Netflix 竞赛而广为人知。当时，流媒体和视频租赁公司 Netflix 宣布了一项改进其推荐系统性能的竞赛。能够将 Netflix 基准（即 Cinematch）提高 10% 的最佳团队将赢得 100 万美元的奖金。因此，本次大赛引起了推荐系统研究领域的广泛关注。随后，大奖由 BellKor 的 Pragmatic Chaos 团队获得，该团队是 BellKor、Pragmatic Theory 和 BigChaos 的组合团队（你现在不需要担心这些算法）。尽管最终得分是集成解决方案（即许多算法的组合）的结果，但矩阵分解算法在最终混合中发挥了关键作用。The technical report of the Netflix Grand Prize solution [[Toscher et al., 2009](https://d2l.ai/chapter_references/zreferences.html#id278 "Töscher, A., Jahrer, M., & Bell, R. M. (2009). The bigchaos solution to the netflix grand prize. Netflix prize documentation, pp. 1–52.")] provides a detailed introduction to the adopted model. In this section, we will dive into the details of the matrix factorization model and its implementation.
 
-## 3.1 The Matrix Factorization Model
+## 3.1 The Matrix Factorization Model（通过MSE近似训练得到）
 
 Matrix factorization is a class of $\text{\color{red}\colorbox{white}{collaborative filtering models}}$. Specifically, the model $\text{\color{yellow}\colorbox{black}{factorizes}}$ the user-item interaction matrix (e.g., rating matrix) $\text{\color{yellow}\colorbox{black}{into}}$ the product of two $\text{\color{magenta}\colorbox{white}{lower-rank matrices}}$, capturing the low-rank structure of the user-item interactions.
 
@@ -21,14 +21,14 @@ $$
 
 $$
 
-where $\hat{\mathbf{R}}\in \mathbb{R}^{m \times n}$ is the predicted rating matrix which has the same shape as $\mathbf{R}$. $\text{\color{yellow}\colorbox{black}{One major problem}}$ of this prediction rule is that $\text{\color{red}\colorbox{white}{users/items biases}}$ can not be modeled. For example, some users tend to give higher ratings or some items always get lower ratings due to poorer quality.(例如，一些用户倾向于给出更高的评分，或者某些项目由于质量较差而总是得到较低的评分。) These biases are commonplace in real-world applications. $\text{\color{yellow}\colorbox{black}{To capture these biases}}$, user specific and item specific $\text{\color{red}\colorbox{white}{bias terms}}$ are introduced. Specifically, the predicted rating user $u$ gives to item $i$ is calculated by
+where $\hat{\mathbf{R}}\in \mathbb{R}^{m \times n}$ is the predicted rating matrix which has the same shape as $\mathbf{R}$. $\text{\color{yellow}\colorbox{black}{One major problem}}$ of this prediction rule is that $\text{\color{red}\colorbox{white}{users/items biases}}$ can not be modeled. For example, some users tend to give higher ratings or some items always get lower ratings due to poorer quality.(例如，一些用户倾向于给出更高的评分，或者某些项目由于质量较差而总是得到较低的评分。) These biases are commonplace in real-world applications. $\text{\color{yellow}\colorbox{black}{To capture these biases}}$, user specific and item specific $\text{\color{red}\colorbox{white}{bias terms}}$ are introduced. Specifically, the predicted rating user $\color{magenta}u$ gives to item $\color{green}i$ is calculated by
 
 $$
-\hat{\mathbf{R}}_{ui} = \mathbf{p}_u\mathbf{q}^\top_i + b_u + b_i
+\hat{\mathbf{R}}_{ui} = \mathbf{p}_u\mathbf{q}^\top_i + {\color{magenta}b_u} + {\color{green}b_i}
 
 $$
 
-Then, we train the $\text{\color{red}\colorbox{black}{matrix factorization model}}$ by minimizing the mean squared error (MSE) between predicted rating scores and real rating scores.  The objective function is defined as follows:
+Then, we train the $\text{\color{red}\colorbox{black}{matrix factorization model}}$ by $\text{\color{yellow}\colorbox{black}{minimizing}}$ the $\text{\color{red}\colorbox{white}{mean squared error (MSE)}}$ $\text{\color{yellow}\colorbox{black}{between}}$ predicted rating scores $\text{\color{yellow}\colorbox{black}{and}}$ real rating scores.  The objective function is defined as follows:
 
 $$
 \underset{\mathbf{P}, \mathbf{Q}, b}{\mathrm{argmin}} \sum_{(u, i) \in \mathcal{K}} \| \mathbf{R}_{ui} -
@@ -48,8 +48,6 @@ The model parameters can be learned with an optimization algorithm, such as Stoc
 
 An intuitive illustration of the matrix factorization model is shown below:
 
-
-
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
@@ -62,8 +60,6 @@ An intuitive illustration of the matrix factorization model is shown below:
      Fig. 17.3.1 Illustration of matrix factorization model
   	</div>
 </center>
-
-
 
 In the rest of this section, we will explain the implementation of matrix factorization and train the model on the MovieLens dataset.
 
@@ -193,7 +189,9 @@ scores = net(np.array([20], dtype='int', ctx=devices[0]),
              np.array([30], dtype='int', ctx=devices[0]))
 scores
 ```
+
 array([3.3714643], ctx=gpu(0))
+
 ## Summary
 
 * The matrix factorization model is widely used in recommender systems.  It can be used to predict ratings that a user might give to an item.

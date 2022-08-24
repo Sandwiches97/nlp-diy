@@ -1,13 +1,15 @@
 import numpy as np
 import torch
 from torch import nn
+from torch.nn.functional import one_hot
 from utilts import *
 from d2l_en.pytorch.d2l import torch as d2l
+from diy_Recommender_Systems.C17_2_ml_dataset import split_and_load_ml100k
 
 class MF(nn.Module):
     def __init__(self, num_factors, num_users, num_items, **kwargs):
         super(MF, self).__init__(**kwargs)
-        self.P = nn.Embedding(num_users, num_factors)
+        self.P = nn.Embedding(num_users, num_factors) # nn.Embedding 是无偏置的仿射变换
         self.Q = nn.Embedding(num_items, num_factors)
         self.user_bias = nn.Embedding(num_users, 1)
         self.item_bias = nn.Embedding(num_items, 1)
@@ -17,7 +19,7 @@ class MF(nn.Module):
         Q_i = self.Q(item_id)
         b_u = self.user_bias(user_id)
         b_q = self.item_bias(item_id)
-        outputs = (P_u*Q_i).sum(axis=1) + torch.squeeze(b_u) + torch.squeeze(b_q)
+        outputs = (P_u@Q_i.T).sum(axis=1) + torch.squeeze(b_u) + torch.squeeze(b_q)
         return outputs.flatten()
 
 def evaluator(net, test_iter, devices):
@@ -43,14 +45,43 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
             values = values if isinstance(values, list) else [values]
             for v in values:
                 input_data.append(v.to(devices))
+            # input_data = List[user ids, item ids, ratings]
             train_feat = input_data[:-1] if len(values)>1 else input_data
             train_label = input_data[-1]
-
-
-
+            with torch.no_grad():
+                preds = [net(*t) for t in zip(*train_feat)]
+                ls = [loss(p, s) for p, s in zip(preds, train_label)]
+            [l.backward() for l in ls]
+            l += sum([l.items for l in ls]).mean()/len(devices)
+            trainer.step(values[0].shape[0])
+            metric.add(l, values[0].shape[0], values[0].size)
+            timer.stop()
+        if len(kwargs) > 0:
+            test_rmse = evaluator(net, test_iter, kwargs['inter_mat'], devices)
+        else:
+            test_rmse = evaluator(net, test_iter, devices)
+        train_l = l/(i+1)
+        animator.add(epoch+1, (train_l, test_rmse))
+    print(f'train loss {metric[0] / metric[1]:.3f}, '
+          f'test RMSE {test_rmse:.3f}')
+    print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
+          f'on {str(devices)}')
 
 def main():
-    pass
+    devices = d2l.try_all_gpus()
+    num_users, num_items, train_iter, test_iter = split_and_load_ml100k(
+        test_ratio=0.1, batch_size=512
+    )
+    net = MF(30, num_users, num_items).to(devices[0])
+    def init_weights(m):
+        if type(m)==nn.Embedding:
+            nn.init.normal_(m.weight, mean=0., std=0.01)
+    net.apply(init_weights)
+    lr, num_epochs, wd, optimizer = 0.002, 20, 1e-5, "adam"
+    loss = nn.MSELoss()
+    optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
+    train_recsys_rating(net, train_iter, test_iter, loss, optimizer, num_epochs, devices[0], evaluator)
+
 
 
 if __name__=="__main__":
