@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from torch import nn
-from torch.nn.functional import one_hot
 from utilts import *
 from d2l_en.pytorch.d2l import torch as d2l
 from diy_Recommender_Systems.C17_2_ml_dataset import split_and_load_ml100k
@@ -15,11 +14,13 @@ class MF(nn.Module):
         self.item_bias = nn.Embedding(num_items, 1)
 
     def forward(self, user_id, item_id):
+        user_id = user_id.to(dtype=torch.long)
+        item_id = item_id.to(dtype=torch.long)
         P_u = self.P(user_id)
         Q_i = self.Q(item_id)
         b_u = self.user_bias(user_id)
         b_q = self.item_bias(item_id)
-        outputs = (P_u@Q_i.T).sum(axis=1) + torch.squeeze(b_u) + torch.squeeze(b_q)
+        outputs = (P_u*Q_i).sum() + torch.squeeze(b_u) + torch.squeeze(b_q)
         return outputs.flatten()
 
 def evaluator(net, test_iter, devices):
@@ -48,13 +49,23 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
             # input_data = List[user ids, item ids, ratings]
             train_feat = input_data[:-1] if len(values)>1 else input_data
             train_label = input_data[-1]
-            with torch.no_grad():
-                preds = [net(*t) for t in zip(*train_feat)]
-                ls = [loss(p, s) for p, s in zip(preds, train_label)]
-            [l.backward() for l in ls]
-            l += sum([l.items for l in ls]).mean()/len(devices)
-            trainer.step(values[0].shape[0])
-            metric.add(l, values[0].shape[0], values[0].size)
+
+            l = 0.
+            for u, i, s in zip(*input_data):
+                pred = net(u, i)
+                ls = loss(pred, s.to(dtype=torch.float))
+                l += ls.data
+                ls.backward()
+                trainer.step()
+                trainer.zero_grad()
+
+            # preds = [net(*t) for t in zip(*train_feat)]
+            # ls = [loss(p, s.to(dtype=torch.float)) for p, s in zip(preds, train_label)]
+            # for l in ls:
+            #     l.backward()
+            # l += sum([l.detach().numpy() for l in ls]).mean()
+            # trainer.step(values[0].shape[0])
+            metric.add(l, values[0].shape[0], values[0].numel())
             timer.stop()
         if len(kwargs) > 0:
             test_rmse = evaluator(net, test_iter, kwargs['inter_mat'], devices)
@@ -81,7 +92,6 @@ def main():
     loss = nn.MSELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
     train_recsys_rating(net, train_iter, test_iter, loss, optimizer, num_epochs, devices[0], evaluator)
-
 
 
 if __name__=="__main__":

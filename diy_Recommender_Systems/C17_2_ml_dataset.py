@@ -97,15 +97,15 @@ def split_and_load_ml100k(split_mode="seq-aware", feedback="explicit",
     train_u, train_i, train_r, _ = load_data_ml100k(train_data, num_users, num_items, feedback)
     test_u, test_i, test_r, _ = load_data_ml100k(test_data, num_users, num_items, feedback)
 
-    tmp_u, tmp_i = np.zeros((len(train_u), num_users), dtype=int), np.zeros((len(train_u), num_items), dtype=int)
-    tmp_u[np.arange(len(train_u)), train_u] = 1
-    tmp_i[np.arange(len(train_u)), train_i] = 1
-    train_u, train_i, train_r = np.array(tmp_u), np.array(tmp_i), np.array(train_r)
+    # tmp_u, tmp_i = np.zeros((len(train_u), num_users), dtype=int), np.zeros((len(train_u), num_items), dtype=int)
+    # tmp_u[np.arange(len(train_u)), train_u] = 1
+    # tmp_i[np.arange(len(train_u)), train_i] = 1
+    train_u, train_i, train_r = np.array(train_u), np.array(train_i), np.array(train_r)
 
-    tmp_u, tmp_i = np.zeros((len(test_u), num_users), dtype=int), np.zeros((len(test_u), num_items), dtype=int)
-    tmp_u[np.arange(len(test_u)), test_u] = 1
-    tmp_i[np.arange(len(test_u)), test_i] = 1
-    test_u, test_i, test_r = np.array(tmp_u), np.array(tmp_i), np.array(test_r)
+    # tmp_u, tmp_i = np.zeros((len(test_u), num_users), dtype=int), np.zeros((len(test_u), num_items), dtype=int)
+    # tmp_u[np.arange(len(test_u)), test_u] = 1
+    # tmp_i[np.arange(len(test_u)), test_i] = 1
+    test_u, test_i, test_r = np.array(test_u), np.array(test_i), np.array(test_r)
 
     train_ds = Data(train_u, train_i, train_r)
     test_ds = Data(test_u, test_i, test_r)
