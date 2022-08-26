@@ -1,7 +1,7 @@
 # 1 Overview of Recommender Systems
 
 - 推荐系统对个人用户和行业很重要。**协同过滤 CF 是推荐中的一个关键概念。**
-- 反馈有两种类型：隐式反馈和显式反馈。**在过去十年中，已经探索了许多推荐任务。**
+- 反馈有两种类型：隐式反馈（点击率）和显式反馈（评分）。**在过去十年中，已经探索了许多推荐任务。**
 
 In the last decade, the Internet has evolved into a platform for large-scale online services, which profoundly changed the way we communicate, read news, buy products, and watch movies. In the meanwhile, the unprecedented number of items (we use the term *item* to refer to movies, news, books, and products.) offered online requires a system that can $\text{\color{yellow}\colorbox{black}{help us discover items}}$ that we preferred. $\text{\color{red}\colorbox{black}{Recommender systems}}$ are therefore powerful information filtering tools that can facilitate personalized services and provide tailored experience to individual users. $\text{\color{yellow}\colorbox{black}{In short}}$, recommender systems play a pivotal role in utilizing the wealth of data available to make choices manageable. Nowadays, recommender systems are at the core of a number of online services providers such as **Amazon, Netflix, and YouTube**. Recall the example of Deep learning books recommended by Amazon in [Fig. 1.3.3](https://d2l.ai/chapter_introduction/index.html#subsec-recommender-systems). The $\text{\color{yellow}\colorbox{black}{benefits}}$ of employing recommender systems are two-folds:
 

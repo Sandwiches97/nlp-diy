@@ -51,20 +51,20 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
             train_label = input_data[-1]
 
             l = 0.
-            for u, i, s in zip(*input_data):
-                pred = net(u, i)
-                ls = loss(pred, s.to(dtype=torch.float))
-                l += ls.data
-                ls.backward()
-                trainer.step()
-                trainer.zero_grad()
+            # for u, i, s in zip(*input_data):
+            #     pred = net(u, i)
+            #     ls = loss(pred, s.to(dtype=torch.float))
+            #     l += ls.data
+            #     ls.backward()
+            #     trainer.step()
+            #     trainer.zero_grad()
 
-            # preds = [net(*t) for t in zip(*train_feat)]
-            # ls = [loss(p, s.to(dtype=torch.float)) for p, s in zip(preds, train_label)]
-            # for l in ls:
-            #     l.backward()
-            # l += sum([l.detach().numpy() for l in ls]).mean()
-            # trainer.step(values[0].shape[0])
+            preds = [net(*t) for t in zip(*train_feat)]
+            ls = [loss(p, s.to(dtype=torch.float)) for p, s in zip(preds, train_label)]
+            for l in ls:
+                l.backward()
+            l += sum([l.data for l in ls]).mean()
+            trainer.step()
             metric.add(l, values[0].shape[0], values[0].numel())
             timer.stop()
         if len(kwargs) > 0:
