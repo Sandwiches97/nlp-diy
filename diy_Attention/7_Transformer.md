@@ -2,7 +2,6 @@
 
 ![image.png](./assets/1658044372017-image.png)
 
-
 - transformer是**编码器－解码器**架构的一个实践，尽管在实际情况中编码器或解码器可以**单独使用**。
 - 在transformer中，多头自注意力用于表示输入序列和输出序列，不过解码器必须通过**掩蔽机制**来保留**自回归属性**。
 - transformer中的**残差连接**和**层规范化**是训练非常深度模型的重要工具。
@@ -78,7 +77,7 @@ In [Section 7.5](https://d2l.ai/chapter_convolutional-modern/batch-norm.html#sec
 
 与BatchNorm不同的是
 
-- Layer  Norm 是对 $\color{red}一个batch$ 的 $\color{green}不同特征$ 进行的归一化，
+- Layer Norm 是对 $\color{red}一个batch$ 的 $\color{green}不同特征$ 进行的归一化，
 - Batch Norm  是对 $\color{red}所有batch$ 的 $\color{green}同一特征$ 进行归一化的
 
 这是因为NLP中，batch中每个句子长度不一样，同时做归一化效果会很差.

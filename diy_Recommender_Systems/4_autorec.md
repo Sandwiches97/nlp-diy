@@ -1,11 +1,7 @@
 # 4 AutoRec: Rating Prediction with Autoencoders
 
-
-
-- 我们可以使用自动编码器构建矩阵分解算法，同时集成非线性层和 dropout 正则化。
-
+- 我们可以使用自动编码器 (两层FC，先降维，后升维) 构建矩阵分解算法，同时集成非线性层和 dropout 正则化。
 - 在 MovieLens 100K 数据集上的实验表明，AutoRec 的性能优于矩阵分解。
-
 
 Although the $\color{red}\text{matrix factorization model}$ achieves decent performance on the rating prediction task, it is essentially a $\color{red}\text{\colorbox{white}{linear model}}$. Thus, such models are not capable of capturing complex nonlinear and intricate relationships that may be predictive of users' preferences.
 
