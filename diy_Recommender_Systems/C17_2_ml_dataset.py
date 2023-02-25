@@ -94,6 +94,7 @@ def split_and_load_ml100k(split_mode="seq-aware", feedback="explicit",
                           test_ratio=0.1, batch_size=256):
     data, num_users, num_items = read_data_ml100k()
     train_data, test_data = split_data_ml100k(data, num_users, num_items, split_mode, test_ratio)
+    # user_id, item_id, rating
     train_u, train_i, train_r, _ = load_data_ml100k(train_data, num_users, num_items, feedback)
     test_u, test_i, test_r, _ = load_data_ml100k(test_data, num_users, num_items, feedback)
 
@@ -116,12 +117,8 @@ def split_and_load_ml100k(split_mode="seq-aware", feedback="explicit",
 
 
 
-def main():
-
-    split_and_load_ml100k()
-
 
 
 if __name__=="__main__":
 
-    main()
+    split_and_load_ml100k()

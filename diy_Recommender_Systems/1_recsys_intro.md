@@ -3,12 +3,27 @@
 - 推荐系统对个人用户和行业很重要。**协同过滤 CF 是推荐中的一个关键概念。**
 - 反馈有两种类型：隐式反馈（点击率）和显式反馈（评分）。**在过去十年中，已经探索了许多推荐任务。**
 
-In the last decade, the Internet has evolved into a platform for large-scale online services, which profoundly changed the way we communicate, read news, buy products, and watch movies. In the meanwhile, the unprecedented number of items (we use the term *item* to refer to movies, news, books, and products.) offered online requires a system that can $\text{\color{yellow}\colorbox{black}{help us discover items}}$ that we preferred. $\text{\color{red}\colorbox{black}{Recommender systems}}$ are therefore powerful information filtering tools that can facilitate personalized services and provide tailored experience to individual users. $\text{\color{yellow}\colorbox{black}{In short}}$, recommender systems play a pivotal role in utilizing the wealth of data available to make choices manageable. Nowadays, recommender systems are at the core of a number of online services providers such as **Amazon, Netflix, and YouTube**. Recall the example of Deep learning books recommended by Amazon in [Fig. 1.3.3](https://d2l.ai/chapter_introduction/index.html#subsec-recommender-systems). The $\text{\color{yellow}\colorbox{black}{benefits}}$ of employing recommender systems are two-folds:
+In the last decade, the Internet has evolved into a platform for large-scale online services, which profoundly changed the way we communicate, read news, buy products, and watch movies. In the meanwhile, the unprecedented number of items (we use the term *item* to refer to movies, news, books, and products.) offered online requires a system that can $\text{\color{yellow}\colorbox{black}{help us discover items}}$ that we preferred. $\text{\color{red}\colorbox{black}{Recommender systems}}$ are therefore powerful information filtering tools that can facilitate personalized services and provide tailored experience to individual users. $\text{\color{yellow}\colorbox{black}{In short}}$, recommender systems play a pivotal role in utilizing the wealth of data available to make choices manageable. Nowadays, recommender systems are at the core of a number of online services providers such as **Amazon, Netflix, and YouTube**. Recall the example of Deep learning books recommended by Amazon in [Fig. 1.3.3]().
 
-- On the one hand, it can largely reduce users’ effort in finding items and alleviate the issue of information overload.
-- On the other hand, it can add business value to online service providers and is an important source of revenue.
+<center>
+    <img style="border-radius: 0.1125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 4px 0 rgba(34,36,38,.08);" 
+    src="https://d2l.ai/_images/stackedanimals.png" width = "10%"/>
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 4px;">
+      Fig. 1.3.3 A donkey, a dog, a cat, and a rooster.
+  	</div>
+</center>
 
-This chapter will introduce the fundamental concepts, classic models and recent advances with deep learning in the field of recommender systems, together with implemented examples.
+The $\text{\color{yellow}\colorbox{black}{benefits}}$ of employing recommender systems are two-folds:
+
+- On the one hand, it can largely $\text{\color{red}{reduce users’ effort}}$ in finding items and alleviate the issue of information overload.
+- On the other hand, it can $\text{\color{red}{add business value}}$ to online service providers and is an important source of revenue.
+
+This chapter will introduce the $\text{\color{red}\colorbox{black}{fundamental concepts}}$, $\text{\color{red}\colorbox{black}{classic models}}$ and $\text{\color{red}\colorbox{black}{recent advances}}$ with deep learning in the field of recommender systems, together with implemented examples.
 
 <center>
     <img style="border-radius: 0.3125em;
@@ -44,7 +59,7 @@ $\text{\color{red}\colorbox{black}{Memory-based CF}}$ has limitations in dealing
 To learn the preference of users, the system shall $\text{\color{red}\colorbox{white}{collect feedback}}$ from them. The feedback can be either explicit or implicit [[Hu et al., 2008](https://d2l.ai/chapter_references/zreferences.html#id118 "Hu, Y., Koren, Y., & Volinsky, C. (2008). Collaborative filtering for implicit feedback datasets. 2008 Eighth IEEE International Conference on Data Mining (pp. 263–272).")].
 
 - For example, [IMDb](https://www.imdb.com/) collects $\text{\color{red}\colorbox{white}{star ratings}}$ ranging from one to ten stars for movies. YouTube provides the $\text{\color{red}\colorbox{white}{thumbs-up and thumbs-down buttons}}$ for users to show their preferences. It is apparent that gathering $\text{\color{red}\colorbox{black}{explicit feedback}}$ requires users to indicate their interests proactively. $\text{\color{yellow}\colorbox{black}{Nonetheless}}$, explicit feedback is not always readily available as many users may be reluctant to rate products.
-- Relatively speaking, $\text{\color{red}\colorbox{black}{implicit feedback}}$ is often readily available since it is mainly concerned with modeling implicit behavior such as user clicks. $\text{\color{yellow}\colorbox{black}{As such}}$, many recommender systems are centered on implicit feedback which indirectly reflects user’s opinion through $\text{\color{red}\colorbox{white}{observing user behavior}}$. There are diverse forms of implicit feedback including $\text{\color{red}\colorbox{white}{purchase history}}$, $\text{\color{red}\colorbox{white}{browsing history}}$, $\text{\color{red}\colorbox{white}{watches}}$ and even $\text{\color{red}\colorbox{white}{mouse movements}}$. $\text{\color{yellow}\colorbox{black}{For example}}$, a user that purchased many books by the same author probably likes that author. Note that implicit feedback is inherently noisy. We can only *guess* their preferences and true motives. A user watched a movie does not necessarily indicate a positive view of that movie.
+- Relatively speaking, $\text{\color{red}\colorbox{black}{implicit feedback}}$ is often readily available since it is mainly concerned with modeling implicit behavior such as user clicks. $\text{\color{yellow}\colorbox{black}{As such}}$, many recommender systems are centered on implicit feedback which indirectly reflects user’s opinion through $\text{\color{red}\colorbox{white}{observing user behavior}}$. There are diverse forms of implicit feedback including $\text{\color{red}\colorbox{white}{purchase history}}$, $\text{\color{red}\colorbox{white}{browsing history}}$, $\text{\color{red}\colorbox{white}{watches}}$ and even $\text{\color{red}\colorbox{white}{mouse movements}}$, a user that purchased many books by the same author probably likes that author. Note that implicit feedback is inherently noisy. We can only *guess* their preferences and true motives. A user watched a movie does not necessarily indicate a positive view of that movie.
 
 ## 1.3 Recommendation Tasks
 
