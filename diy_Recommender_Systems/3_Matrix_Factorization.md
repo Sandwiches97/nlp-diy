@@ -11,6 +11,8 @@ Matrix factorization is a class of $\text{\color{red}\colorbox{white}{collaborat
 
 Let $\mathbf{R} \in \mathbb{R}^{m \times n}$ denote the interaction matrix with $m$ users and $n$ items, and the values of $\mathbf{R}$ represent explicit ratings. The user-item interaction will $\text{\color{yellow}\colorbox{black}{be factorized into}}$ a $\color{magenta}\text{{user latent matrix }} \mathbf{P} \in \mathbb{R}^{m \times k}$ and an $\color{green}\text{{item latent matrix }} \mathbf{Q} \in \mathbb{R}^{n \times k}$, where $k \ll m, n$, is the latent factor size. Let $\color{magenta}\mathbf{p}_u$ denote the $\color{magenta}u^\mathrm{th} \text{ row}$ of $\color{magenta}\mathbf{P}$ and $\color{green}\mathbf{q}_i$ denote the $\color{green}i^\mathrm{th} \text{ row}$ of $\color{green}\mathbf{Q}$.
 
+将交互矩阵 $\mathbf{R}$ 分解成 $\mathbf{P}$:（用户，特征） 与 $\mathbf{Q}$:（商品，特征）
+
 - For a given item $\color{green}i$, the elements of $\color{green}\mathbf{q}_i$ measure the extent to which the item possesses those characteristics such as the genres and languages of a movie.
 - For a given user $\color{magenta}u$, the elements of $\color{magenta}\mathbf{p}_u$ measure the extent of interest the user has in items' corresponding characteristics.
 
@@ -32,7 +34,7 @@ Then, we train the $\text{\color{red}\colorbox{black}{matrix factorization model
 
 $$
 \underset{\mathbf{P}, \mathbf{Q}, b}{\mathrm{argmin}} \sum_{(u, i) \in \mathcal{K}} \| \mathbf{R}_{ui} -
-\hat{\mathbf{R}}_{ui} \|^2 + \lambda (\| \mathbf{P} \|^2_F + \| \mathbf{Q}
+\hat{\mathbf{R}}_{ui} \|^2 + \color{brown}\lambda (\| \mathbf{P} \|^2_F + \| \mathbf{Q}
 \|^2_F + b_u^2 + b_i^2 )
 
 $$
@@ -40,7 +42,7 @@ $$
 where
 
 - $\lambda$ denotes the regularization rate.
-- The regularizing term $\lambda (\| \mathbf{P} \|^2_F + \| \mathbf{Q}\|^2_F + b_u^2 + b_i^2 )$ is used to avoid over-fitting by penalizing the magnitude of the parameters.
+- The $\text{\color{brown}\colorbox{white}{regularizing term}}$ $\color{brown}\lambda (\| \mathbf{P} \|^2_F + \| \mathbf{Q}\|^2_F + b_u^2 + b_i^2 )$ is used to avoid over-fitting by penalizing the magnitude of the parameters.
 - The $(u, i)$  pairs for which $\mathbf{R}_{ui}$ is known are stored in the set
   $\mathcal{K}=\{(u, i) \mid \mathbf{R}_{ui} \text{ is known}\}$.
 
@@ -77,20 +79,22 @@ npx.set_np()
 First, we implement the matrix factorization model described above. The user and item latent factors can be created with the `nn.Embedding`. The `input_dim` is the number of items/users and the (`output_dim`) is the dimension of the latent factors ($k$).  We can also use `nn.Embedding` to create the user/item biases by setting the `output_dim` to one. In the `forward` function, user and item ids are used to look up the embeddings.
 
 ```python
-class MF(nn.Block):
+class MF(nn.Module):
     def __init__(self, num_factors, num_users, num_items, **kwargs):
         super(MF, self).__init__(**kwargs)
-        self.P = nn.Embedding(input_dim=num_users, output_dim=num_factors)
-        self.Q = nn.Embedding(input_dim=num_items, output_dim=num_factors)
+        self.P = nn.Embedding(num_users, num_factors) # nn.Embedding 是无偏置的仿射变换
+        self.Q = nn.Embedding(num_items, num_factors)
         self.user_bias = nn.Embedding(num_users, 1)
         self.item_bias = nn.Embedding(num_items, 1)
 
     def forward(self, user_id, item_id):
+        user_id = user_id.to(dtype=torch.long)
+        item_id = item_id.to(dtype=torch.long)
         P_u = self.P(user_id)
         Q_i = self.Q(item_id)
         b_u = self.user_bias(user_id)
-        b_i = self.item_bias(item_id)
-        outputs = (P_u * Q_i).sum(axis=1) + np.squeeze(b_u) + np.squeeze(b_i)
+        b_q = self.item_bias(item_id)
+        outputs = (P_u*Q_i).sum(axis=1) + torch.squeeze(b_u) + torch.squeeze(b_q)
         return outputs.flatten()
 ```
 
@@ -107,16 +111,14 @@ where $\mathcal{T}$ is the set consisting of pairs of users and items that you w
 
 ```python
 def evaluator(net, test_iter, devices):
-    rmse = mx.metric.RMSE()  # Get the RMSE
-    rmse_list = []
+    loss = nn.MSELoss()
+    rmse = []
     for idx, (users, items, ratings) in enumerate(test_iter):
-        u = gluon.utils.split_and_load(users, devices, even_split=False)
-        i = gluon.utils.split_and_load(items, devices, even_split=False)
-        r_ui = gluon.utils.split_and_load(ratings, devices, even_split=False)
-        r_hat = [net(u, i) for u, i in zip(u, i)]
-        rmse.update(labels=r_ui, preds=r_hat)
-        rmse_list.append(rmse.get()[1])
-    return float(np.mean(np.array(rmse_list)))
+        # r_hat = [net(u.to(devices), i.to(devices)) for u, i in zip(users, items)]
+        r_hat = net(users.to(devices), items.to(devices))
+        rmseLoss = torch.sqrt(loss(r_hat, ratings.to(devices)))
+        rmse.append(rmseLoss)
+    return float(np.mean([float(it) for it in rmse]))
 ```
 
 ## 3.4 Training and Evaluating the Model
@@ -126,36 +128,37 @@ In the training function, we adopt the $L_2$ loss with weight decay. The weight 
 ```python
 #@save
 def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
-                        devices=d2l.try_all_gpus(), evaluator=None,
-                        **kwargs):
-    timer = d2l.Timer()
-    animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 2],
+                        devices=try_gpu(), evaluator=None, **kwargs):
+    timer = Timer()
+    animator = Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 2],
                             legend=['train loss', 'test RMSE'])
+    net.train()
     for epoch in range(num_epochs):
-        metric, l = d2l.Accumulator(3), 0.
+        metric, l = Accumulator(3), 0.
         for i, values in enumerate(train_iter):
             timer.start()
             input_data = []
             values = values if isinstance(values, list) else [values]
             for v in values:
-                input_data.append(gluon.utils.split_and_load(v, devices))
-            train_feat = input_data[0:-1] if len(values) > 1 else input_data
+                input_data.append(v.to(devices))
+            # input_data = List[user ids, item ids, ratings]
+            train_feat = input_data[:-1] if len(values)>1 else input_data
             train_label = input_data[-1]
-            with autograd.record():
-                preds = [net(*t) for t in zip(*train_feat)]
-                ls = [loss(p, s) for p, s in zip(preds, train_label)]
-            [l.backward() for l in ls]
-            l += sum([l.asnumpy() for l in ls]).mean() / len(devices)
-            trainer.step(values[0].shape[0])
-            metric.add(l, values[0].shape[0], values[0].size)
+
+            l = 0.
+            preds = net(train_feat[0], train_feat[1])
+            ls = loss(preds, train_label.to(dtype=torch.float))
+            ls.backward()
+            l += ls.item()
+            trainer.step()
+            metric.add(l, values[0].shape[0], values[0].numel())
             timer.stop()
-        if len(kwargs) > 0:  # It will be used in section AutoRec
-            test_rmse = evaluator(net, test_iter, kwargs['inter_mat'],
-                                  devices)
+        if len(kwargs) > 0:
+            test_rmse = evaluator(net, test_iter, kwargs['inter_mat'], devices)
         else:
             test_rmse = evaluator(net, test_iter, devices)
-        train_l = l / (i + 1)
-        animator.add(epoch + 1, (train_l, test_rmse))
+        train_l = l/(i+1)
+        animator.add(epoch+1, (float(train_l), test_rmse))
     print(f'train loss {metric[0] / metric[1]:.3f}, '
           f'test RMSE {test_rmse:.3f}')
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '

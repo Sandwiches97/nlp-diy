@@ -20,17 +20,18 @@ class MF(nn.Module):
         Q_i = self.Q(item_id)
         b_u = self.user_bias(user_id)
         b_q = self.item_bias(item_id)
-        outputs = (P_u*Q_i).sum() + torch.squeeze(b_u) + torch.squeeze(b_q)
+        outputs = (P_u*Q_i).sum(axis=1) + torch.squeeze(b_u) + torch.squeeze(b_q)
         return outputs.flatten()
 
 def evaluator(net, test_iter, devices):
     loss = nn.MSELoss()
     rmse = []
     for idx, (users, items, ratings) in enumerate(test_iter):
-        r_hat = [net(u.to(devices), i.to(devices)) for u, i in zip(users, items)]
-        rmseLoss = torch.sqrt(loss(r_hat, ratings))
+        # r_hat = [net(u.to(devices), i.to(devices)) for u, i in zip(users, items)]
+        r_hat = net(users.to(devices), items.to(devices))
+        rmseLoss = torch.sqrt(loss(r_hat, ratings.to(devices)))
         rmse.append(rmseLoss)
-    return float(np.mean(rmse))
+    return float(np.mean([float(it) for it in rmse]))
 
 def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
                         devices=try_gpu(), evaluator=None, **kwargs):
@@ -51,19 +52,15 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
             train_label = input_data[-1]
 
             l = 0.
-            # for u, i, s in zip(*input_data):
-            #     pred = net(u, i)
-            #     ls = loss(pred, s.to(dtype=torch.float))
-            #     l += ls.data
-            #     ls.backward()
-            #     trainer.step()
-            #     trainer.zero_grad()
-
-            preds = [net(*t) for t in zip(*train_feat)]
-            ls = [loss(p, s.to(dtype=torch.float)) for p, s in zip(preds, train_label)]
-            for l in ls:
-                l.backward()
-            l += sum([l.data for l in ls]).mean()
+            preds = net(train_feat[0], train_feat[1])
+            ls = loss(preds, train_label.to(dtype=torch.float))
+            ls.backward()
+            l += ls.item()
+            # preds = [net(t) for t in zip(*train_feat)]
+            # ls = [loss(p, s.to(dtype=torch.float)) for p, s in zip(preds, train_label)]
+            # for l in ls:
+            #     l.backward()
+            # l += sum([l.data for l in ls]).mean()
             trainer.step()
             metric.add(l, values[0].shape[0], values[0].numel())
             timer.stop()
@@ -72,7 +69,7 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
         else:
             test_rmse = evaluator(net, test_iter, devices)
         train_l = l/(i+1)
-        animator.add(epoch+1, (train_l, test_rmse))
+        animator.add(epoch+1, (float(train_l), test_rmse))
     print(f'train loss {metric[0] / metric[1]:.3f}, '
           f'test RMSE {test_rmse:.3f}')
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
@@ -93,6 +90,9 @@ def main():
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
     train_recsys_rating(net, train_iter, test_iter, loss, optimizer, num_epochs, devices[0], evaluator)
 
-
+    # 测试 user id=20，item id=30 的评分
+    scores = net(torch.Tensor([20]).to(devices[0]),
+                 torch.Tensor([30]).to(devices[0]))
+    print(scores)
 if __name__=="__main__":
     main()
