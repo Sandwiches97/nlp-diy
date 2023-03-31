@@ -87,7 +87,7 @@ d2l.plt.show()
 
 We split the dataset into training and test sets. The following function provides two split modes including `random` and `seq-aware`.
 
-- In the `random` mode, the function splits the 100k interactions randomly without considering timestamp and uses the 90% of the data as $\text{\color{red}\colorbox{white}{training samples}}$ and the rest 10% as $\text{\color{blue}\colorbox{white}{test samples}}$ by default.
+- In the `random` mode, the function splits the 100k interactions rand omly without considering timestamp and uses the 90% of the data as $\text{\color{red}\colorbox{white}{training samples}}$ and the rest 10% as $\text{\color{blue}\colorbox{white}{test samples}}$ by default.
 - In the `seq-aware` mode, we leave out the item that a user rated most recently for $\text{\color{blue}\colorbox{white}{test}}$, and users' historical interactions as $\text{\color{red}\colorbox{white}{training set}}$.  User historical interactions are $\text{\color{yellow}\colorbox{black}{sorted from}}$ oldest $\text{\color{yellow}\colorbox{black}{to}}$ newest based on timestamp. This mode will be used **in the sequence-aware recommendation section**.
 
 ```python
