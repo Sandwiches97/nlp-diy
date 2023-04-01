@@ -15,19 +15,25 @@ class AutoRec(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, input:torch.Tensor):
-        hidden = self.dropout(F.sigmoid(self.encoder(input.to(dtype=torch.float32))))
+        hidden = self.dropout(torch.sigmoid(self.encoder(input.to(dtype=torch.float32))))
         pred = self.decoder(hidden)
-        if input.requires_grad:
+        if input.requires_grad: # Mask the gradient during training
             return pred*torch.sign(input)
         else:
             return pred
 
 def evaluator(network, inter_matrix, test_data, devices):
-    scores = []
+    scores = None
+    test_data = torch.from_numpy(test_data).to(devices)
     for values in inter_matrix:
         feat = values.to(devices)
-        scores.extend([network(i) for i in feat])
-    recons = torch.Tensor([item for sublist in scores for item in sublist])
+        # scores.extend([network(i) for i in feat])
+        if scores is not None:
+            scores = torch.cat((scores, network(feat)), dim=0)
+        else:
+            scores = network(feat)
+    # recons = torch.Tensor([item for sublist in scores for item in sublist])
+    recons = scores
     # Calculate the test RMSE
     rmse = torch.sqrt(
         torch.sum(
@@ -53,7 +59,7 @@ if __name__=="__main__":
             nn.init.normal_(m.weight, mean=0., std=0.01)
     net.apply(init_weights)
     net.to(device)
-    lr, num_epochs, wd = 0.002, 20, 1e-5
+    lr, num_epochs, wd = 0.05, 50, 1e-5
     loss = nn.MSELoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
     train_recsys_rating(net, train_iter, test_iter, loss, optimizer, num_epochs, device, evaluator, inter_mat=test_inter_mat)

@@ -52,7 +52,10 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
             train_label = input_data[-1]
 
             l = 0.
-            preds = net(train_feat[0], train_feat[1])
+            if len(train_feat)==2:
+                preds = net(train_feat[0], train_feat[1])
+            else:
+                preds = net(train_feat[0])
             ls = loss(preds, train_label.to(dtype=torch.float))
             ls.backward()
             l += ls.item()
@@ -69,6 +72,8 @@ def train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
         else:
             test_rmse = evaluator(net, test_iter, devices)
         train_l = l/(i+1)
+        print(f'train loss {train_l:.3f}, '
+          f'test RMSE {test_rmse:.3f}')
         animator.add(epoch+1, (float(train_l), test_rmse))
     print(f'train loss {metric[0] / metric[1]:.3f}, '
           f'test RMSE {test_rmse:.3f}')

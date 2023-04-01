@@ -1,6 +1,8 @@
 # 3 Matrix Factorization 矩阵因子分解
 
 - 矩阵分解模型广泛用于推荐系统。**它可用于 $\color{red}预测用户可能对项目的评分$。**
+- 这是一个线性模型，属于协同过滤（CF）模型。
+- 交互矩阵 $\mathbf{R}$：（用户，商品） 分解成 $\mathbf{P}$:（用户，特征） 与 $\mathbf{Q}$:（商品，特征）
 - 我们可以为推荐系统实现和训练矩阵分解。
 
 $\text{\color{red}\colorbox{black}{Matrix Factorization}}$ [[Koren et al., 2009](https://d2l.ai/chapter_references/zreferences.html#id148 "Koren, Y., Bell, R., & Volinsky, C. (2009). Matrix factorization techniques for recommender systems. Computer, pp. 30–37.")] is a well-established algorithm in the recommender systems literature. 矩阵分解模型的第一个版本是由 Simon Funk 在一篇著名的 [blog post](https://sifter.org/~simon/journal/20061211.html) 中提出的，他在其中描述了对交互矩阵进行因式分解的思想。随后，由于 2006 年举行的 Netflix 竞赛而广为人知。当时，流媒体和视频租赁公司 Netflix 宣布了一项改进其推荐系统性能的竞赛。能够将 Netflix 基准（即 Cinematch）提高 10% 的最佳团队将赢得 100 万美元的奖金。因此，本次大赛引起了推荐系统研究领域的广泛关注。随后，大奖由 BellKor 的 Pragmatic Chaos 团队获得，该团队是 BellKor、Pragmatic Theory 和 BigChaos 的组合团队（你现在不需要担心这些算法）。尽管最终得分是集成解决方案（即许多算法的组合）的结果，但矩阵分解算法在最终混合中发挥了关键作用。The technical report of the Netflix Grand Prize solution [[Toscher et al., 2009](https://d2l.ai/chapter_references/zreferences.html#id278 "Töscher, A., Jahrer, M., & Bell, R. M. (2009). The bigchaos solution to the netflix grand prize. Netflix prize documentation, pp. 1–52.")] provides a detailed introduction to the adopted model. In this section, we will dive into the details of the matrix factorization model and its implementation.
