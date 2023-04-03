@@ -34,12 +34,12 @@ $$
 where $\| \cdot \|_{\mathcal{O}}$ means $\color{yellow}\text{\colorbox{black}{only}}$ the contribution of $\color{red}\text{\colorbox{white}{observed ratings}}$ are considered, that is, only weights that are associated with observed inputs $\color{yellow}\text{\colorbox{black}{are updated}}$ during back-propagation.
 
 ```python
-import mxnet as mx
-from mxnet import autograd, gluon, np, npx
-from mxnet.gluon import nn
-from d2l import mxnet as d2l
-
-npx.set_np()
+import torch
+from torch import autograd, nn
+from torch.utils.data import DataLoader
+from utilts import try_gpu
+from C17_2_ml_dataset import read_data_ml100k, split_data_ml100k, load_data_ml100k
+from C17_3_matrix_factorization import train_recsys_rating
 ```
 
 ## 4.2 Implementing the Model
@@ -52,19 +52,18 @@ A typical autoencoder $\color{yellow}\text{\colorbox{black}{consists of}}$ an en
 We follow this practice and create the encoder and decoder with dense layers. The activation of encoder is set to `sigmoid` by default and no activation is applied for decoder. Dropout is included after the encoding transformation to reduce over-fitting. The gradients of unobserved inputs are masked out to ensure that only observed ratings contribute to the model learning process.
 
 ```python
-class AutoRec(nn.Block):
-    def __init__(self, num_hidden, num_users, dropout=0.05):
+class AutoRec(nn.Module):
+    def __init__(self, input_size, num_hidden, num_users, dropout=0.05):
         super(AutoRec, self).__init__()
-        self.encoder = nn.Dense(num_hidden, activation='sigmoid',
-                                use_bias=True)
-        self.decoder = nn.Dense(num_users, use_bias=True)
+        self.encoder = nn.Linear(input_size, num_hidden, bias=True)
+        self.decoder = nn.Linear(num_hidden, num_users, bias=True)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, input):
-        hidden = self.dropout(self.encoder(input))
+    def forward(self, input:torch.Tensor):
+        hidden = self.dropout(torch.sigmoid(self.encoder(input.to(dtype=torch.float32))))
         pred = self.decoder(hidden)
-        if autograd.is_training():  # Mask the gradient during training
-            return pred * np.sign(input)
+        if input.requires_grad: # Mask the gradient during training
+            return pred*torch.sign(input)
         else:
             return pred
 ```
@@ -75,14 +74,23 @@ Since the input and output have been changed, we need to reimplement the evaluat
 
 ```python
 def evaluator(network, inter_matrix, test_data, devices):
-    scores = []
+    scores = None
+    test_data = torch.from_numpy(test_data).to(devices)
     for values in inter_matrix:
-        feat = gluon.utils.split_and_load(values, devices, even_split=False)
-        scores.extend([network(i).asnumpy() for i in feat])
-    recons = np.array([item for sublist in scores for item in sublist])
+        feat = values.to(devices)
+        # scores.extend([network(i) for i in feat])
+        if scores is not None:
+            scores = torch.cat((scores, network(feat)), dim=0)
+        else:
+            scores = network(feat)
+    # recons = torch.Tensor([item for sublist in scores for item in sublist])
+    recons = scores
     # Calculate the test RMSE
-    rmse = np.sqrt(np.sum(np.square(test_data - np.sign(test_data) * recons))
-                   / np.sum(np.sign(test_data)))
+    rmse = torch.sqrt(
+        torch.sum(
+            torch.square(test_data-torch.sign(test_data)*recons)
+        )/torch.sum(torch.sign(test_data))
+    )
     return float(rmse)
 ```
 

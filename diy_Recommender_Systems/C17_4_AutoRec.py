@@ -1,8 +1,6 @@
 import torch
-from d2l_en.pytorch.d2l import torch as d2l
 from torch import autograd, nn
 from torch.utils.data import DataLoader
-from torch.nn import functional as F
 from utilts import try_gpu
 from C17_2_ml_dataset import read_data_ml100k, split_data_ml100k, load_data_ml100k
 from C17_3_matrix_factorization import train_recsys_rating
