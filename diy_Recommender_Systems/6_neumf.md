@@ -2,11 +2,17 @@
 
 This section moves beyond explicit feedback, introducing the $\text{\color{red}\colorbox{black}{neural collaborative filtering (NCF)}}$ framework for recommendation with $\color{red}\text{\colorbox{white}{implicit feedback}}$.
 
-$\color{red}\text{\colorbox{white}{Implicit feedback}}$ is pervasive (普遍) in recommender systems. Actions such as Clicks, buys, and watches are common implicit feedback which are easy to collect and indicative of users' preferences. The model we will introduce, titled $\text{\color{red}\colorbox{black}{NeuMF}}$ :cite:`He.Liao.Zhang.ea.2017`, short for neural matrix factorization, aims to address the personalized ranking task with implicit feedback. This model leverages the flexibility and non-linearity of neural networks to replace dot products of matrix factorization, aiming at enhancing the model expressiveness. In specific, this model is structured with two subnetworks including generalized matrix factorization (GMF) and MLP and models the interactions from two pathways instead of simple dot products. The outputs of these two networks are concatenated for the final prediction scores calculation. Unlike the rating prediction task in AutoRec, this model generates a ranked recommendation list to each user based on the implicit feedback. We will use the personalized ranking loss introduced in the last section to train this model.
+$\color{red}\text{\colorbox{white}{Implicit feedback}}$ is pervasive (普遍) in recommender systems. Actions such as Clicks, buys, and watches are common implicit feedback which are easy to collect and indicative of users' preferences. The model we will introduce, titled $\text{\color{red}\colorbox{black}{NeuMF}}$ :cite:`He.Liao.Zhang.ea.2017`, short (简写) for neural matrix factorization, aims to address the personalized ranking task with implicit feedback. This model $\color{yellow}\text{\colorbox{black}{leverages}}$ the flexibility and non-linearity of neural networks $\color{yellow}\text{\colorbox{black}{to}}$ replace dot products of matrix factorization, $\color{yellow}\text{\colorbox{black}{aiming at}}$ enhancing the model expressiveness.
+
+In specific, this model $\color{yellow}\text{\colorbox{black}{is structured with}}$ two subnetworks including $\text{\color{red}\colorbox{black}{generalized matrix factorization (GMF)}}$ and $\text{\color{red}\colorbox{black}{MLP}}$, and $\color{yellow}\text{\colorbox{black}{models}}$ the interactions $\color{yellow}\text{\colorbox{black}{from}}$ two pathways instead of simple dot products. The outputs of these two networks $\color{yellow}\text{\colorbox{black}{are concatenated for}}$ the final prediction scores calculation.
+
+Unlike the rating prediction task in AutoRec, this model generates a ranked recommendation list to each user based on the implicit feedback. We will use the personalized ranking loss introduced in the last section to train this model.
 
 ## The NeuMF model
 
-As aforementioned, NeuMF fuses two subnetworks. The GMF is a generic neural network version of matrix factorization where the input is the elementwise product of user and item latent factors. It consists of two neural layers:
+As aforementioned, $\text{\color{red}\colorbox{black}{NeuMF}}$ fuses two subnetworks.
+
+The $\text{\color{red}\colorbox{black}{GMF}}$ is a generic neural network version of matrix factorization where the input is the elementwise product of user and item latent factors. It consists of two neural layers:
 
 $$
 \mathbf{x} = \mathbf{p}_u \odot \mathbf{q}_i \\
@@ -14,9 +20,9 @@ $$
 
 $$
 
-where $\odot$ denotes the Hadamard product of vectors. $\mathbf{P} \in \mathbb{R}^{m \times k}$  and $\mathbf{Q} \in \mathbb{R}^{n \times k}$ corespond to user and item latent matrix respectively. $\mathbf{p}_u \in \mathbb{R}^{ k}$ is the $u^\mathrm{th}$ row of $P$ and $\mathbf{q}_i \in \mathbb{R}^{ k}$ is the $i^\mathrm{th}$ row of $Q$.  $\alpha$ and $h$ denote the activation function and weight of the output layer. $\hat{y}_{ui}$ is the prediction score of the user $u$ might give to the item $i$.
+where $\odot$ denotes the Hadamard product (对应元素相乘) of vectors. $\mathbf{P} \in \mathbb{R}^{m \times k}$  and $\mathbf{Q} \in \mathbb{R}^{n \times k}$ corespond to user and item latent matrix respectively. $\mathbf{p}_u \in \mathbb{R}^{ k}$ is the $u^\mathrm{th}$ row of $P$ and $\mathbf{q}_i \in \mathbb{R}^{ k}$ is the $i^\mathrm{th}$ row of $Q$.  $\alpha$ and $h$ denote the activation function and weight of the output layer. $\hat{y}_{ui}$ is the prediction score of the user $u$ might give to the item $i$.
 
-Another component of this model is MLP. To enrich model flexibility, the MLP subnetwork does not share user and item embeddings with GMF. It uses the concatenation of user and item embeddings as input. With the complicated connections and nonlinear transformations, it is capable of estimating the intricate interactions between users and items. More precisely, the MLP subnetwork is defined as:
+Another component of this model is $\text{\color{red}\colorbox{black}{MLP}}$. To enrich model flexibility, the MLP subnetwork does not share user and item embeddings with GMF. It $\color{yellow}\text{\colorbox{black}{uses}}$ the concatenation of user and item embeddings $\color{yellow}\text{\colorbox{black}{as}}$ input. With the complicated connections and nonlinear transformations, it is capable of estimating the intricate interactions between users and items. More precisely, the MLP subnetwork is defined as:
 
 $$
 \begin{aligned}
@@ -40,7 +46,8 @@ $$
 
 The following figure illustrates the model architecture of NeuMF.
 
-![Illustration of the NeuMF model](../img/rec-neumf.svg)
+![image.png](./assets/1680925529993-image.png)
+
 
 ```python
 import random
@@ -235,6 +242,7 @@ devices = d2l.try_all_gpus()
 net = NeuMF(10, num_users, num_items, nums_hiddens=[10, 10, 10])
 net.initialize(ctx=devices, force_reinit=True, init=mx.init.Normal(0.01))
 ```
+
 The following code trains the model.
 
 ```python
@@ -245,6 +253,7 @@ trainer = gluon.Trainer(net.collect_params(), optimizer,
 train_ranking(net, train_iter, test_iter, loss, trainer, None, num_users,
               num_items, num_epochs, devices, evaluate_ranking, candidates)
 ```
+
 train loss 16.982, test hit rate 0.075, test AUC 0.531
 13.2 examples/sec on [gpu(0), gpu(1)]
 ![svg](output_17_1.svg)
