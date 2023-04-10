@@ -8,7 +8,7 @@ In specific, this model $\color{yellow}\text{\colorbox{black}{is structured with
 
 Unlike the rating prediction task in AutoRec, this model generates a ranked recommendation list to each user based on the implicit feedback. We will use the personalized ranking loss introduced in the last section to train this model.
 
-## The NeuMF model
+## 6.1 The NeuMF model
 
 As aforementioned, $\text{\color{red}\colorbox{black}{NeuMF}}$ fuses two subnetworks.
 
@@ -48,7 +48,6 @@ The following figure illustrates the model architecture of NeuMF.
 
 ![image.png](./assets/1680925529993-image.png)
 
-
 ```python
 import random
 import mxnet as mx
@@ -59,9 +58,9 @@ from d2l import mxnet as d2l
 npx.set_np()
 ```
 
-## Model Implementation
+## 6.2 Model Implementation
 
-The following code implements the NeuMF model. It consists of a generalized matrix factorization model and an MLP with different user and item embedding vectors. The structure of the MLP is controlled with the parameter `nums_hiddens`. ReLU is used as the default activation function.
+The following code implements the NeuMF model. It consists of a $\text{\color{red}\colorbox{black}{generalized matrix factorization model}}$ and an $\text{\color{red}\colorbox{black}{MLP}}$ with different user and item embedding vectors. The structure of the MLP is controlled with the parameter `nums_hiddens`. ReLU is used as the default activation function.
 
 ```python
 class NeuMF(nn.Block):
@@ -89,9 +88,9 @@ class NeuMF(nn.Block):
         return self.prediction_layer(con_res)
 ```
 
-## Customized Dataset with Negative Sampling
+## 6.3 Customized Dataset with Negative Sampling
 
-For pairwise ranking loss, an important step is negative sampling. For each user, the items that a user has not interacted with are candidate items (unobserved entries). The following function takes users identity and candidate items as input, and samples negative items randomly for each user from the candidate set of that user. During the training stage, the model ensures that the items that a user likes to be ranked higher than items he dislikes or has not interacted with.
+For pairwise ranking loss, an important step is $\text{\color{red}\colorbox{black}{negative sampling}}$. For each user, the items that a user has not interacted with are $\color{red}\text{\colorbox{white}{candidate items}}$ (unobserved entries). The following function $\color{yellow}\text{\colorbox{black}{takes}}$ users identity and candidate items $\color{yellow}\text{\colorbox{black}{as}}$ input, and samples negative items randomly for each user from the $\color{red}\text{\colorbox{white}{candidate set}}$ of that user. During the training stage, the model $\color{yellow}\text{\colorbox{black}{ensures that}}$ the items that a user likes to be ranked $\color{yellow}\text{\colorbox{black}{higher than}}$ items he dislikes or has not interacted with.
 
 ```python
 class PRDataset(gluon.data.Dataset):
@@ -110,7 +109,7 @@ class PRDataset(gluon.data.Dataset):
         return self.users[idx], self.items[idx], neg_items[indices]
 ```
 
-## Evaluator
+## 6.4 Evaluator
 
 In this section, we adopt the splitting by time strategy to construct the training and test sets. Two evaluation measures including hit rate at given cutting off $\ell$ ($\text{Hit}@\ell$) and area under the ROC curve (AUC) are used to assess the model effectiveness.  Hit rate at given position $\ell$ for each user indicates that whether the recommended item is included in the top $\ell$ ranked list. The formal definition is as follows:
 
