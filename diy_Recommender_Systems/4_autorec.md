@@ -19,7 +19,6 @@ Let $\mathbf{R}_{*i}$ denote the $i^\mathrm{th}$ column of the rating matrix, wh
 
 $$
 h(\mathbf{R}_{*i}) = f(\mathbf{W} \cdot g(\mathbf{V} \mathbf{R}_{*i} + \mu) + b)
-
 $$
 
 where $f(\cdot)$ and $g(\cdot)$ represent activation functions, $\mathbf{W}$ and $\mathbf{V}$ are weight matrices, $\mu$ and $b$ are biases. Let $h( \cdot )$ denote the whole network of AutoRec. The output $h(\mathbf{R}_{*i})$ is the reconstruction of the $i^\mathrm{th}$ column of the rating matrix.
@@ -28,7 +27,6 @@ The following objective function $\color{yellow}\text{\colorbox{black}{aims to}}
 
 $$
 \underset{\mathbf{W},\mathbf{V},\mu, b}{\mathrm{argmin}} \sum_{i=1}^M{\parallel \mathbf{R}_{*i} - h(\mathbf{R}_{*i})\parallel_{\mathcal{O}}^2} +\lambda(\| \mathbf{W} \|_F^2 + \| \mathbf{V}\|_F^2)
-
 $$
 
 where $\| \cdot \|_{\mathcal{O}}$ means $\color{yellow}\text{\colorbox{black}{only}}$ the contribution of $\color{red}\text{\colorbox{white}{observed ratings}}$ are considered, that is, only weights that are associated with observed inputs $\color{yellow}\text{\colorbox{black}{are updated}}$ during back-propagation.

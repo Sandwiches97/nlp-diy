@@ -22,14 +22,12 @@ These latent factors might measure obvious dimensions as mentioned in those exam
 
 $$
 \hat{\mathbf{R}} = \mathbf{{\color{magenta}P}{\color{green}Q}}^\top
-
 $$
 
 where $\hat{\mathbf{R}}\in \mathbb{R}^{m \times n}$ is the predicted rating matrix which has the same shape as $\mathbf{R}$. $\text{\color{yellow}\colorbox{black}{One major problem}}$ of this prediction rule is that $\text{\color{red}\colorbox{white}{users/items biases}}$ can not be modeled. For example, some users tend to give higher ratings or some items always get lower ratings due to poorer quality.(例如，一些用户倾向于给出更高的评分，或者某些项目由于质量较差而总是得到较低的评分。) These biases are commonplace in real-world applications. $\text{\color{yellow}\colorbox{black}{To capture these biases}}$, user specific and item specific $\text{\color{red}\colorbox{white}{bias terms}}$ are introduced. Specifically, the predicted rating user $\color{magenta}u$ gives to item $\color{green}i$ is calculated by
 
 $$
 \hat{\mathbf{R}}_{ui} = \mathbf{p}_u\mathbf{q}^\top_i + {\color{magenta}b_u} + {\color{green}b_i}
-
 $$
 
 Then, we train the $\text{\color{red}\colorbox{black}{matrix factorization model}}$ by $\text{\color{yellow}\colorbox{black}{minimizing}}$ the $\text{\color{red}\colorbox{white}{mean squared error (MSE)}}$ $\text{\color{yellow}\colorbox{black}{between}}$ predicted rating scores $\text{\color{yellow}\colorbox{black}{and}}$ real rating scores.  The objective function is defined as follows:
@@ -38,7 +36,6 @@ $$
 \underset{\mathbf{P}, \mathbf{Q}, b}{\mathrm{argmin}} \sum_{(u, i) \in \mathcal{K}} \| \mathbf{R}_{ui} -
 \hat{\mathbf{R}}_{ui} \|^2 + \color{brown}\lambda (\| \mathbf{P} \|^2_F + \| \mathbf{Q}
 \|^2_F + b_u^2 + b_i^2 )
-
 $$
 
 where
@@ -106,7 +103,6 @@ We then implement the RMSE (root-mean-square error) measure, which is commonly u
 
 $$
 \mathrm{RMSE} = \sqrt{\frac{1}{|\mathcal{T}|}\sum_{(u, i) \in \mathcal{T}}(\mathbf{R}_{ui} -\hat{\mathbf{R}}_{ui})^2}
-
 $$
 
 where $\mathcal{T}$ is the set consisting of pairs of users and items that you want to evaluate on. $|\mathcal{T}|$ is the size of this set. We can use the RMSE function provided by `mx.metric`.

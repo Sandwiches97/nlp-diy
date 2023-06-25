@@ -8,7 +8,7 @@ In the last decade, the Internet has evolved into a platform for large-scale onl
 <center>
     <img style="border-radius: 0.1125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 4px 0 rgba(34,36,38,.08);" 
-    src="https://d2l.ai/_images/stackedanimals.png" width = "10%"/>
+    src="https://d2l.ai/_images/stackedanimals.png" width = "20%"/>
     <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
